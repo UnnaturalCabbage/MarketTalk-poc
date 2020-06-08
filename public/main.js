@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "9f9a7c7acfff0062bd56";
+/******/ 	var hotCurrentHash = "9f73351fbad07d2664de";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -14621,7 +14621,7 @@ __webpack_require__.r(__webpack_exports__);
       </speech-input>
     <speech-input
       data-gestures="поиск | найти">
-      <tts-output data-rate="1.3" data-lang="ru-RU">
+      <tts-output data-rate="1.3" data-lang="ru-RU" data-block-speech>
         Что вы хотите найти?
         <speech-input
         data-on-userinput="updateSearchInput($event)"
@@ -15258,6 +15258,8 @@ class SpeechRecognitionComponent extends HTMLElement {
 
     _defineProperty(this, "_actionsGrammar", new Set());
 
+    _defineProperty(this, "_isBlocked", false);
+
     _defineProperty(this, "_addActionGrammar", keys => {
       keys.forEach(key => {
         this.actionsGrammar.add(key);
@@ -15265,6 +15267,18 @@ class SpeechRecognitionComponent extends HTMLElement {
       let grammar = '#JSGF V1.0; grammar actions; public <actions> = ' + [...this.actionsGrammar].join(' | ') + ' ;';
       this.recognition.grammars = new (window.SpeechGrammarList || window.webkitSpeechGrammarList)();
       this.recognition.grammars.addFromString(grammar, 1);
+    });
+
+    _defineProperty(this, "block", timeout => {
+      this.isBlocked = true;
+
+      if (timeout) {
+        setTimeout(this.unblock, timeout);
+      }
+    });
+
+    _defineProperty(this, "unblock", () => {
+      this.isBlocked = false;
     });
 
     let {
@@ -15281,18 +15295,14 @@ class SpeechRecognitionComponent extends HTMLElement {
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.maxAlternatives = 1;
-    let isBlocked = false;
     this._voiceObservable = rxjs__WEBPACK_IMPORTED_MODULE_0__["Observable"].create(observer => {
       this.recognition.onresult = e => {
         let last = e.results.length - 1;
         let isFinal = e.results[last].isFinal;
 
-        if (!isBlocked) {
+        if (!this.isBlocked) {
           if (isFinal) {
-            isBlocked = true;
-            setTimeout(() => {
-              isBlocked = false;
-            }, 1000);
+            this.block(2000);
           }
 
           observer.next(e);
@@ -15324,6 +15334,14 @@ class SpeechRecognitionComponent extends HTMLElement {
 
   get actionsGrammar() {
     return this._actionsGrammar;
+  }
+
+  get isBlocked() {
+    return this._isBlocked;
+  }
+
+  set isBlocked(value) {
+    this._isBlocked = value;
   }
 
   connectedCallback() {
@@ -15364,11 +15382,12 @@ class TTSOutputComponent extends HTMLElement {
 
     _defineProperty(this, "_params", {
       rate: 1,
-      pitch: 0.5,
+      pitch: 0.6,
       lang: "en-EN",
       voiceNow: false,
       activateOnce: false,
-      clearNext: false
+      clearNext: false,
+      blockSpeech: false
     });
 
     _defineProperty(this, "_innerContent", "");
@@ -15394,9 +15413,16 @@ class TTSOutputComponent extends HTMLElement {
       }
 
       if (this.params.clearNext) {
-        onEnd.push(() => {
-          this.tts.clearQueue();
-        });
+        onEnd.push(this.tts.clearQueue);
+      }
+
+      if (this.params.blockSpeech) {
+        let speechRecog = this.closest("speech-recognition");
+
+        if (speechRecog) {
+          onStart.push(speechRecog.block);
+          onEnd.push(speechRecog.unblock);
+        }
       }
 
       voiceParams.onStart = onStart;
