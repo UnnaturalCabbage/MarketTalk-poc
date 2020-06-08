@@ -34,7 +34,7 @@ export default class SpeechRecognitionComponent extends HTMLElement {
               isBlocked = true;
               setTimeout(() => {
                 isBlocked = false;
-              }, 1400);
+              }, 2000);
             }
             observer.next(e);
           }
