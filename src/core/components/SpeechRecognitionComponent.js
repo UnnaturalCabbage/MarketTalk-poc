@@ -6,6 +6,7 @@ export default class SpeechRecognitionComponent extends HTMLElement {
   _recognition = null;
   _voiceObservable = null;
   _actionsGrammar = new Set();
+  _isBlocked = false;
   
   constructor() {
     super();
@@ -23,18 +24,14 @@ export default class SpeechRecognitionComponent extends HTMLElement {
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.maxAlternatives = 1;
-    let isBlocked = false;
     this._voiceObservable = Observable
       .create((observer) => {
         this.recognition.onresult = (e) => {
           let last = e.results.length - 1;
           let isFinal = e.results[last].isFinal;
-          if (!isBlocked) {
+          if (!this.isBlocked) {
             if (isFinal) {
-              isBlocked = true;
-              setTimeout(() => {
-                isBlocked = false;
-              }, 2000);
+              this.block(2000);
             }
             observer.next(e);
           }
@@ -69,6 +66,14 @@ export default class SpeechRecognitionComponent extends HTMLElement {
     return this._actionsGrammar;
   }
 
+  get isBlocked() {
+    return this._isBlocked;
+  }
+
+  set isBlocked(value) {
+    this._isBlocked = value;
+  }
+
   _addActionGrammar = (keys) => {
     keys.forEach((key) => {
       this.actionsGrammar.add(key);
@@ -83,6 +88,17 @@ export default class SpeechRecognitionComponent extends HTMLElement {
       el.bindSpeech(this.voiceObservable);
       // this._addActionGrammar(el.gestures);
     });
+  }
+
+  block = (timeout) => {
+    this.isBlocked = true;
+    if (timeout) {
+      setTimeout(this.unblock, timeout)
+    }
+  };
+
+  unblock = () => {
+    this.isBlocked = false;
   }
 };
 customElements.define('speech-recognition', SpeechRecognitionComponent);

@@ -7,7 +7,6 @@
 </head>
 <body>
    <div id="app">
-      <!-- <tts-output data-now>Вас приветствует система голосового управление Маркет Толк!</tts-output> -->
       <speech-recognition data-lang="ru-RU">
          <!-- <nav class="navbar navbar-light bg-light">
             <app-search></app-search>
@@ -17,6 +16,14 @@
                <app-products></app-productsd>
             </div>
          </main>
+         <tts-output data-voice-now data-rate="1.5" data-block-speech>
+            Вас приветствует система голосового управление Маркет Толк!
+            Основные команды:
+            Поиск,
+            По очереди,
+            Подробнее,
+            Главная
+         </tts-output>
       </speech-recognition>
    </div>
 </body>

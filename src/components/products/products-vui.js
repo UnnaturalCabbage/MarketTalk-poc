@@ -6,7 +6,7 @@ export default function() {
       </speech-input>
     <speech-input
       data-gestures="поиск | найти">
-      <tts-output data-rate="1.3" data-lang="ru-RU">
+      <tts-output data-rate="1.3" data-lang="ru-RU" data-block-speech>
         Что вы хотите найти?
         <speech-input
         data-on-userinput="updateSearchInput($event)"

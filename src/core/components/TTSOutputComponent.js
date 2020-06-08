@@ -5,11 +5,12 @@ export default class TTSOutputComponent extends HTMLElement {
     _tts = null;
     _params = {
         rate: 1,
-        pitch: 0.5,
+        pitch: 0.6,
         lang: "en-EN",
         voiceNow: false,
         activateOnce: false,
         clearNext: false,
+        blockSpeech: false
     };
     _innerContent = "";
 
@@ -28,7 +29,6 @@ export default class TTSOutputComponent extends HTMLElement {
 
         let { rate, pitch, lang } = this.params;
         this._tts = new TextToSpeech({ rate, pitch, lang });
-
         if (this.params.voiceNow) {
             this.voice(this.text);
         }
@@ -70,9 +70,14 @@ export default class TTSOutputComponent extends HTMLElement {
             });
         }
         if (this.params.clearNext) {
-            onEnd.push(() => {
-                this.tts.clearQueue();
-            });
+            onEnd.push(this.tts.clearQueue);
+        }
+        if (this.params.blockSpeech) {
+            let speechRecog = this.closest("speech-recognition");
+            if (speechRecog) { 
+               onStart.push(speechRecog.block);
+               onEnd.push(speechRecog.unblock);
+            }
         }
 
         voiceParams.onStart = onStart;
