@@ -30,7 +30,18 @@ export default class TTSOutputComponent extends HTMLElement {
         let { rate, pitch, lang } = this.params;
         this._tts = new TextToSpeech({ rate, pitch, lang });
         if (this.params.voiceNow) {
-            this.voice(this.text);
+            window.currApp = window.currApp || {};
+            if (window.currApp.isVoiceAvailabe) {
+                this.voice();
+            } else {
+                let interval = setInterval(() => {
+                    window.currApp = window.currApp || {};
+                    if (window.currApp.isVoiceAvailabe) {
+                        clearInterval(interval);
+                        this.voice();
+                    }
+                }, 100);
+            }
         }
     }
 

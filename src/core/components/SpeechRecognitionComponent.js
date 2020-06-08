@@ -44,8 +44,10 @@ export default class SpeechRecognitionComponent extends HTMLElement {
       .pipe(share());
     
     window.addEventListener("keypress", (e) => {
-      if (event.which == 13) {
+      if (e.which == 13) {
         this.recognition.start();
+        window.currApp = window.currApp || {};
+        window.currApp.isVoiceAvailabe = true;
       }
     });
   }
@@ -101,4 +103,4 @@ export default class SpeechRecognitionComponent extends HTMLElement {
     this.isBlocked = false;
   }
 };
-customElements.define('speech-recognition', SpeechRecognitionComponent);
+customElements.define("speech-recognition", SpeechRecognitionComponent);

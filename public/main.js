@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "9f73351fbad07d2664de";
+/******/ 	var hotCurrentHash = "bee34331f4a0ce95f011";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -14884,9 +14884,9 @@ class TextToSpeech extends SpeechSynthesisUtterance {
         }
 
         window.speechSynthesis.speak(this);
-        this.text = '';
 
         this.onend = () => {
+          this.text = '';
           this.onend = null;
 
           if (typeof onEnd === "function") {
@@ -15314,8 +15314,10 @@ class SpeechRecognitionComponent extends HTMLElement {
       };
     }).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_1__["share"])());
     window.addEventListener("keypress", e => {
-      if (event.which == 13) {
+      if (e.which == 13) {
         this.recognition.start();
+        window.currApp = window.currApp || {};
+        window.currApp.isVoiceAvailabe = true;
       }
     });
   }
@@ -15354,7 +15356,7 @@ class SpeechRecognitionComponent extends HTMLElement {
 
 }
 ;
-customElements.define('speech-recognition', SpeechRecognitionComponent);
+customElements.define("speech-recognition", SpeechRecognitionComponent);
 
 /***/ }),
 
@@ -15459,7 +15461,20 @@ class TTSOutputComponent extends HTMLElement {
     });
 
     if (this.params.voiceNow) {
-      this.voice(this.text);
+      window.currApp = window.currApp || {};
+
+      if (window.currApp.isVoiceAvailabe) {
+        this.voice();
+      } else {
+        let interval = setInterval(() => {
+          window.currApp = window.currApp || {};
+
+          if (window.currApp.isVoiceAvailabe) {
+            clearInterval(interval);
+            this.voice();
+          }
+        }, 100);
+      }
     }
   }
 

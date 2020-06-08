@@ -59,8 +59,8 @@ export default class TextToSpeech extends SpeechSynthesisUtterance {
         onStart.forEach((func) => func());
       }
       window.speechSynthesis.speak(this);
-      this.text = '';
       this.onend = () => {
+        this.text = '';
         this.onend = null;
         if (typeof onEnd === "function") {
           onEnd();
